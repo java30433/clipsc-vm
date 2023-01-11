@@ -231,7 +231,7 @@ class VirtualMachine extends EventEmitter {
     
     /**
      * Set the compression level of sb3 file.
-     * It's exposed to clipcc-gui.
+     * It's exposed to clipsc-gui.
      * @param {number} the compression level.
      */
     setCompressionLevel (level) {
@@ -615,7 +615,7 @@ class VirtualMachine extends EventEmitter {
         /*
         // Since the extension loader was established in gui, so that
         // we shouldn't load extension here.
-        // See: clipcc-gui/src/lib/sb-file-uploader-hoc.jsx
+        // See: clipsc-gui/src/lib/sb-file-uploader-hoc.jsx
         const extensionPromises = [];
 
         extensions.extensionIDs.forEach(extensionID => {

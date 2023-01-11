@@ -1,15 +1,15 @@
 {
-  "name": "clipcc-vm",
-  "version": "3.1.13",
+  "name": "clipsc-vm",
+  "version": "0.0.1",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
-  "homepage": "https://github.com/clipteam/clipcc-vm",
+  "homepage": "https://github.com/clipteam/clipsc-vm",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git"
+    "url": "git+ssh://git@github.com/clipteam/clipsc-vm.git"
   },
-  "main": "./dist/node/clipcc-vm.js",
+  "main": "./dist/node/clipsc-vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "webpack --progress --colors --bail",
@@ -45,7 +45,7 @@
     "axios": "^0.21.1",
     "btoa": "1.2.1",
     "canvas-toBlob": "1.0.0",
-    "clipcc-l10n": "3.1.9",
+    "clipsc-l10n": "3.1.9",
     "decode-html": "2.0.0",
     "diff-match-patch": "1.0.4",
     "format-message": "6.2.1",
@@ -73,7 +73,7 @@
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "callsite": "^1.0.0",
-    "clipcc-block": "3.1.8",
+    "clipsc-block": "0.0.1",
     "copy-webpack-plugin": "^4.5.4",
     "docdash": "^1.2.0",
     "eslint": "^5.3.0",

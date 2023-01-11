@@ -1,22 +1,22 @@
 <div align="center">
 
-# clipcc-vm
+# clipsc-vm
 
 </div>
 
-#### ClipCC VM is a library for representing, running, and maintaining the state of computer programs written using [ClipCC Blocks](https://github.com/Clipteam/clipcc-block).
+#### ClipCC VM is a library for representing, running, and maintaining the state of computer programs written using [ClipCC Blocks](https://github.com/Clipteam/clipsc-block).
 
 ## Installation
 This requires you to have Git and Node.js installed.
 
 To install as a dependency for your own application:
 ```bash
-yarn install clipcc-vm
+yarn install clipsc-vm
 ```
-To set up a development environment to edit clipcc-vm yourself:
+To set up a development environment to edit clipsc-vm yourself:
 ```bash
-git clone https://github.com/LLK/clipcc-vm.git
-cd clipcc-vm
+git clone https://github.com/LLK/clipsc-vm.git
+cd clipsc-vm
 yarn install
 ```
 
@@ -43,7 +43,7 @@ yarn run build
 ```
 
 ```html
-<script src="/path/to/dist/web/clipcc-vm.js"></script>
+<script src="/path/to/dist/web/clipsc-vm.js"></script>
 <script>
     var vm = new window.VirtualMachine({appVersion: '0.0.0'});
     // do things
@@ -53,7 +53,7 @@ yarn run build
 ## How to include in a Node.js App
 For an extended setup example, check out the /src/playground directory, which includes a fully running VM instance.
 ```js
-var VirtualMachine = require('clipcc-vm');
+var VirtualMachine = require('clipsc-vm');
 var vm = new VirtualMachine({appVersion: '0.0.0'});
 
 // Block events

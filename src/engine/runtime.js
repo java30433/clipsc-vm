@@ -195,7 +195,7 @@ class Runtime extends EventEmitter {
         
         /**
          * The version of ClipCC.
-         * It should be set by clipcc-gui.
+         * It should be set by clipsc-gui.
          * @type {String}
          */
         this.version = 'unknown';
@@ -306,7 +306,7 @@ class Runtime extends EventEmitter {
          */
         this.turboMode = false;
 
-        // the framerate of clipcc-vm
+        // the framerate of clipsc-vm
         // 60 to match default of compatibility mode off
         this.frameRate = 60;
         

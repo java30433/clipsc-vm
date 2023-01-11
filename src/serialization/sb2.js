@@ -2,7 +2,7 @@
  * @fileoverview
  * Partial implementation of an SB2 JSON importer.
  * Parses provided JSON and then generates all needed
- * clipcc-vm runtime structures.
+ * clipsc-vm runtime structures.
  */
 
 const Blocks = require('../engine/blocks');

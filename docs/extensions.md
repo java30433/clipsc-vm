@@ -21,8 +21,8 @@ There are four types of extensions that can define everything from the Scratch's
 ## JavaScript Environment
 
 Most Scratch 3.0 is written using JavaScript features not yet commonly supported by browsers. For compatibility we
-transpile the code to ES5 before publishing or deploying. Any extension included in the `clipcc-vm` repository may
-use ES6+ features and may use `require` to reference other code within the `clipcc-vm` repository.
+transpile the code to ES5 before publishing or deploying. Any extension included in the `clipsc-vm` repository may
+use ES6+ features and may use `require` to reference other code within the `clipsc-vm` repository.
 
 Unofficial extensions must be self-contained. Authors of unofficial extensions are responsible for ensuring browser
 compatibility for those extensions, including transpiling if necessary.
@@ -48,7 +48,7 @@ ways.
 ## Defining an Extension
 
 Scratch extensions are defined as a single Javascript class which accepts either a reference to the Scratch
-[VM](https://github.com/Clipteam/clipcc-vm) runtime or a "runtime proxy" which handles communication with the Scratch VM
+[VM](https://github.com/Clipteam/clipsc-vm) runtime or a "runtime proxy" which handles communication with the Scratch VM
 across a well defined worker boundary (i.e. the sandbox).
 
 ```js
@@ -287,7 +287,7 @@ const TargetType = require('../../extension-support/target-type');
 const formatMessage = require('format-message');
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
-// See: clipcc-vm/src/extension-support/extension-manager.js
+// See: clipsc-vm/src/extension-support/extension-manager.js
 class SomeBlocks {
     constructor (runtime) {
         /**

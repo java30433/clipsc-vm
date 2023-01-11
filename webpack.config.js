@@ -44,8 +44,8 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'clipcc-vm': './src/index.js',
-            'clipcc-vm.min': './src/index.js'
+            'clipsc-vm': './src/index.js',
+            'clipsc-vm.min': './src/index.js'
         },
         output: {
             libraryTarget: 'umd',
@@ -64,7 +64,7 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'node',
         entry: {
-            'clipcc-vm': './src/index.js'
+            'clipsc-vm': './src/index.js'
         },
         output: {
             libraryTarget: 'commonjs2',
@@ -108,7 +108,7 @@ module.exports = [
                     loader: 'script-loader'
                 },
                 {
-                    test: require.resolve('clipcc-block/dist/vertical.js'),
+                    test: require.resolve('clipsc-block/dist/vertical.js'),
                     loader: 'expose-loader?Blockly'
                 },
                 {
@@ -130,7 +130,7 @@ module.exports = [
         },
         plugins: base.plugins.concat([
             new CopyWebpackPlugin([{
-                from: 'node_modules/clipcc-block/media',
+                from: 'node_modules/clipsc-block/media',
                 to: 'media'
             }, {
                 from: 'node_modules/scratch-storage/dist/web'

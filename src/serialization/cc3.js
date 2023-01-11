@@ -1,7 +1,7 @@
 /**
  * @fileoverview
  * An CC3 serializer and deserializer. Parses provided
- * JSON and then generates all needed clipcc-vm runtime structures.
+ * JSON and then generates all needed clipsc-vm runtime structures.
  */
 
 const vmPackage = require('../../package.json');

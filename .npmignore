@@ -16,4 +16,4 @@
 /coverage
 
 # Exclude already built packages from testing with npm pack
-/clipcc-vm-*.{tar,tgz}
+/clipsc-vm-*.{tar,tgz}
