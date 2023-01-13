@@ -412,16 +412,22 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * @param {compile} 是否编译
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
-    saveProjectSb3 () {
-        const sb3 = require('./serialization/sb3');
+    saveProjectSb3 (compile = false) {
+        let sb3;
+        if (compile) {
+            sb3 = require('./serialization/sb3_compile');
+            console.info("输出模式：编译");
+        } else {
+            sb3 = require('./serialization/sb3')
+        }
         const data = {
             soundDescs: serializeSounds(this.runtime),
             costumeDescs: serializeCostumes(this.runtime),
             projectData: sb3.serialize(this.runtime)
         };
-
         // TODO want to eventually move zip creation out of here, and perhaps
         // into scratch-storage
         const zip = new JSZip();

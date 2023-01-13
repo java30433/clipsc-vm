@@ -33,10 +33,10 @@
     }
   },
   "tap": {
-      "branches": 60,
-      "functions": 70,
-      "lines": 70,
-      "statements": 70
+    "branches": 60,
+    "functions": 70,
+    "lines": 70,
+    "statements": 70
   },
   "dependencies": {
     "@vernier/godirect": "1.5.0",
@@ -45,7 +45,7 @@
     "axios": "^0.21.1",
     "btoa": "1.2.1",
     "canvas-toBlob": "1.0.0",
-    "clipsc-l10n": "3.1.9",
+    "clipsc-l10n": "0.0.1",
     "decode-html": "2.0.0",
     "diff-match-patch": "1.0.4",
     "format-message": "6.2.1",
@@ -67,6 +67,7 @@
   "devDependencies": {
     "@babel/core": "7.13.10",
     "@babel/preset-env": "7.14.8",
+    "@babel/preset-react": "^7.0.0",
     "@commitlint/cli": "17.0.2",
     "@commitlint/config-conventional": "17.0.2",
     "adm-zip": "0.4.11",
@@ -74,7 +75,7 @@
     "babel-loader": "^8.2.2",
     "callsite": "^1.0.0",
     "clipsc-block": "0.0.1",
-    "copy-webpack-plugin": "^4.5.4",
+    "copy-webpack-plugin": "^4.6.0",
     "docdash": "^1.2.0",
     "eslint": "^5.3.0",
     "eslint-config-scratch": "^5.1.0",
@@ -89,8 +90,8 @@
     "scratch-audio": "latest",
     "scratch-render": "latest",
     "scratch-render-fonts": "latest",
-    "scratch-svg-renderer": "latest",
     "scratch-storage": "2.0.2",
+    "scratch-svg-renderer": "latest",
     "script-loader": "0.7.2",
     "stats.js": "0.17.0",
     "tap": "16.2.0",

@@ -30,24 +30,12 @@ const ColorParam = {
 };
 
 /**
- * Enum for layer parameter values.
- * @readonly
- * @enum {string}
+ * @typedef {object} PenState - the pen state associated with a particular target.
+ * @property {Boolean} penDown - tracks whether the pen should draw for this target.
+ * @property {number} color - the current color (hue) of the pen.
+ * @property {PenAttributes} penAttributes - cached pen attributes for the renderer. This is the authoritative value for
+ *   diameter but not for pen color.
  */
-const LayerParam = {
-    FRONT: 'front',
-    BACK: 'back'
-};
-
-/**
- * Enum for true/false.
- * @readonly
- * @enum {string}
- */
-const BooleanParam = {
-    TRUE: true,
-    FALSE: false
-};
 
 /**
  * Host for the Pen-related blocks in Scratch 3.0
@@ -75,19 +63,6 @@ class Scratch3PenBlocks {
          * @private
          */
         this._penSkinId = -1;
-
-        /**
-         * The attribute of print text.
-         * @type {object}
-         */
-        this.printTextAttribute = {
-            bold: false,
-            underline: false,
-            italic: false,
-            size: '28',
-            font: 'Arial',
-            color: '#000000'
-        };
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this._onTargetMoved = this._onTargetMoved.bind(this);
@@ -148,21 +123,6 @@ class Scratch3PenBlocks {
         );
     }
 
-    shouldCreatePenLayer () {
-        if (this._penSkinId < 0)
-            return true; // 首次创建 PenLayer
-        if (!this.runtime.renderer._allSkins[this._penSkinId])
-            return true; // 已被不明原因清空
-        // 不知道为什么会报覆盖
-        /*
-        if (this.runtime.renderer._allSkins[this._penSkinId].constructor.name !== 'PenSkin') {
-            console.log('PenLayer 已被覆盖');
-            return true;
-        } // 被覆盖
-        */
-        return false;
-    }
-
     /**
      * Retrieve the ID of the renderer "Skin" corresponding to the pen layer. If
      * the pen Skin doesn't yet exist, create it.
@@ -170,18 +130,10 @@ class Scratch3PenBlocks {
      * @private
      */
     _getPenLayerID () {
-        if (this.shouldCreatePenLayer() && this.runtime.renderer) {
+        if (this._penSkinId < 0 && this.runtime.renderer) {
             this._penSkinId = this.runtime.renderer.createPenSkin();
             this._penDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
             this.runtime.renderer.updateDrawableSkinId(this._penDrawableId, this._penSkinId);
-
-            this.bitmapCanvas = document.createElement('canvas');
-            this.bitmapCanvas.width = 480;
-            this.bitmapCanvas.height = 360;
-            this.bitmapSkinID = this.runtime.renderer.createBitmapSkin(this.bitmapCanvas, 1);
-            this.bitmapDrawableID = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
-            this.runtime.renderer.updateDrawableSkinId(this.bitmapDrawableID, this.bitmapSkinID);
-            this.runtime.renderer.updateDrawableVisible(this.bitmapDrawableID, false);
         }
         return this._penSkinId;
     }
@@ -314,48 +266,6 @@ class Scratch3PenBlocks {
         return (1.0 - alpha) * 100.0;
     }
 
-    getBooleanParamItem () {
-        return [
-            {
-                text: formatMessage({
-                    id: 'pen.booleanMenu.true',
-                    default: 'true',
-                    description: 'label for true'
-                }),
-                value: BooleanParam.TRUE
-            },
-            {
-                text: formatMessage({
-                    id: 'pen.booleanMenu.false',
-                    default: 'false',
-                    description: 'label for false'
-                }),
-                value: BooleanParam.FALSE
-            }
-        ];
-    }
-    
-    getLayerParam () {
-        return [
-            {
-                text: formatMessage({
-                    id: 'pen.layerMenu.front',
-                    default: 'front',
-                    description: 'label for front'
-                }),
-                value: LayerParam.FRONT
-            },
-            {
-                text: formatMessage({
-                    id: 'pen.layerMenu.back',
-                    default: 'back',
-                    description: 'label for back'
-                }),
-                value: LayerParam.BACK
-            }
-        ];
-    }
-
     /**
      * Convert a pen transparency value to an alpha value.
      * Alpha ranges from 0 to 1, where 0 is transparent and 1 is opaque.
@@ -389,153 +299,6 @@ class Scratch3PenBlocks {
                         default: 'erase all',
                         description: 'erase all pen trails and stamps'
                     })
-                },
-                /*
-                {
-                    opcode: 'setPrintFontUnderline',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFontUnderline',
-                        default: 'set print font underline to [BOOLEANMENU]',
-                        description: 'set print font underline'
-                    }),
-                    arguments: {
-                        BOOLEANMENU: {
-                            type: ArgumentType.STRING,
-                            menu: 'booleanParam',
-                            defaultValue: BooleanParam.TRUE
-                        }
-                    }
-                },
-                {
-                    opcode: 'setPrintFontBold',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFontBold',
-                        default: 'set print font bold to [BOOLEANMENU]',
-                        description: 'set print font bold'
-                    }),
-                    arguments: {
-                        BOOLEANMENU: {
-                            type: ArgumentType.STRING,
-                            menu: 'booleanParam',
-                            defaultValue: BooleanParam.TRUE
-                        }
-                    }
-                },
-                {
-                    opcode: 'setPrintFontItalic',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFontItalic',
-                        default: 'set print font italic to [BOOLEANMENU]',
-                        description: 'set print font italic'
-                    }),
-                    arguments: {
-                        BOOLEANMENU: {
-                            type: ArgumentType.STRING,
-                            menu: 'booleanParam',
-                            defaultValue: BooleanParam.TRUE
-                        }
-                    }
-                },
-                */
-                {
-                    opcode: 'setPrintFont',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFont',
-                        default: 'set print font to [FONT]',
-                        description: 'set print font'
-                    }),
-                    arguments: {
-                        FONT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Arial'
-                        }
-                    }
-                },
-                {
-                    opcode: 'setPrintFontSize',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFontSize',
-                        default: 'set print font size to [SIZE]',
-                        description: 'set print font size'
-                    }),
-                    arguments: {
-                        SIZE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 24
-                        }
-                    }
-                },
-                {
-                    opcode: 'setPrintFontColor',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setPrintFontColor',
-                        default: 'set print font color to [COLOR]',
-                        description: 'set print font color'
-                    }),
-                    arguments: {
-                        COLOR: {
-                            type: ArgumentType.COLOR
-                        }
-                    }
-                },
-                {
-                    opcode: 'printText',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.printText',
-                        default: 'print [TEXT] on x:[X] y:[Y]',
-                        description: 'print text'
-                    }),
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'I love ClipCC!'
-                        },
-                        X: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        Y: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        }
-                    }
-                },
-                {
-                    opcode: 'drawRect',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.drawRect',
-                        default: 'use [COLOR] to draw a square on x:[X] y:[Y] width:[WIDTH] height:[HEIGHT]',
-                        description: 'draw a square'
-                    }),
-                    arguments: {
-                        COLOR: {
-                            type: ArgumentType.COLOR
-                        },
-                        X: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        Y: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        WIDTH: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        },
-                        HEIGHT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    }
                 },
                 {
                     opcode: 'stamp',
@@ -720,127 +483,15 @@ class Scratch3PenBlocks {
                         }
                     },
                     hideFromPalette: true
-                },
-                {
-                    opcode: 'goPenLayer',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.GoPenLayer',
-                        default: 'go to [OPTION] layer',
-                        description: 'go to front layer(pen)'
-                    }),
-                    arguments: {
-                        OPTION: {
-                            type: ArgumentType.STRING,
-                            menu: 'layerParam',
-                            defaultValue: LayerParam.FRONT
-                        }
-                    },
                 }
             ],
             menus: {
                 colorParam: {
                     acceptReporters: true,
                     items: this._initColorParam()
-                },
-                layerParam: {
-                    acceptReporters: false,
-                    items: this.getLayerParam()
-                },
-                booleanParam: {
-                    acceptReporters: true,
-                    items: this.getBooleanParamItem()
                 }
             }
         };
-    }
-    
-    // experimental stuff
-    goPenLayer (args) {
-        if (this.runtime.renderer) {
-            if (args.OPTION === 'front') {
-                this.runtime.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS_PEN);
-                this.runtime.renderer.setDrawableOrder(this._penDrawableId, Infinity, StageLayering.PEN_LAYER);
-            } else if (args.OPTION === 'back') {
-                this.runtime.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS);
-                this.runtime.renderer.setDrawableOrder(this._penDrawableId, -Infinity, StageLayering.PEN_LAYER);
-            }
-        }
-    }
-
-    // ClipBlocks
-    setPrintFontUnderline (args) {
-        this.printTextAttribute.underline = Cast.toBoolean(args.BOOLEANMENU);
-    }
-    setPrintFontBold (args) {
-        this.printTextAttribute.bold = Cast.toBoolean(args.BOOLEANMENU);
-    }
-    setPrintFontItalic (args) {
-        this.printTextAttribute.italic = Cast.toBoolean(args.BOOLEANMENU);
-    }
-    setPrintFont (args) {
-        this.printTextAttribute.font = args.FONT;
-    }
-    setPrintFontSize (args) {
-        this.printTextAttribute.size = args.SIZE;
-    }
-    setPrintFontColor (args) {
-        const rgb = Cast.toRgbColorObject(args.COLOR);
-        const hex = Color.rgbToHex(rgb);
-        this.printTextAttribute.color = hex;
-    }
-
-    printText (args, util) {
-        const penSkinId = this._getPenLayerID(); // 获取画笔图层ID
-
-        const width = util.target.runtime.constructor.STAGE_WIDTH;
-        const height = util.target.runtime.constructor.STAGE_HEIGHT;
-        const ctx = this.bitmapCanvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-        ctx.save();
-        ctx.translate(width / 2, height / 2);
-        let resultFont = '';
-        resultFont += `${this.printTextAttribute.size}px `;
-        resultFont += this.printTextAttribute.font;
-        ctx.font = resultFont;
-
-        ctx.strokeStyle = this.printTextAttribute.color;
-        ctx.fillStyle = ctx.strokeStyle;
-
-        ctx.fillText(args.TEXT, args.X, -args.Y);
-        ctx.restore();
-
-        const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
-        const imageData = ctx.getImageData(0, 0, width, height);
-        printSkin._setTexture(imageData);
-        this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
-
-        this.runtime.requestRedraw();
-    }
-
-    drawRect (args, util) {
-        const penSkinId = this._getPenLayerID(); // 获取画笔图层ID
-
-        const width = util.target.runtime.constructor.STAGE_WIDTH;
-        const height = util.target.runtime.constructor.STAGE_HEIGHT;
-        const ctx = this.bitmapCanvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-        ctx.save();
-        ctx.translate(width / 2, height / 2);
-
-        const rgb = Cast.toRgbColorObject(args.COLOR);
-        const hex = Color.rgbToHex(rgb);
-        ctx.fillStyle = hex;
-        ctx.strokeStyle = ctx.fillStyle;
-        ctx.fillRect(args.X, -args.Y, args.WIDTH, args.HEIGHT);
-        ctx.restore();
-
-        const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
-        const imageData = ctx.getImageData(0, 0, width, height);
-        printSkin._setTexture(imageData);
-        this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
-
-        this.runtime.requestRedraw();
     }
 
     /**
