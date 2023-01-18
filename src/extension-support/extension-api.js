@@ -30,7 +30,7 @@ const argumentType = [
  * Information used for converting Scratch argument types into scratch-blocks data.
  * @type {object.<ArgumentType, {shadowType: string, fieldType: string}>}
  */
- const ArgumentTypeMap = (() => {
+const ArgumentTypeMap = (() => {
     const map = {};
     map[ArgumentType.ANGLE] = {
         shadow: {
@@ -87,7 +87,7 @@ const argumentType = [
 })();
 
 class ExtensionAPI {
-    constructor (vm) {
+    constructor(vm) {
         this.vm = vm;
         this.categoryInfo = [];
         this.blockInfo = [];
@@ -95,7 +95,7 @@ class ExtensionAPI {
         this.categories = new Map();
     }
 
-    _getCategory (categoryId) {
+    _getCategory(categoryId) {
         for (const category of this.vm.runtime._blockInfo) {
             if (category.id === categoryId) {
                 return category;
@@ -104,7 +104,7 @@ class ExtensionAPI {
         // TODO: Error throw
     }
 
-    _generateBlockInfo (block) {
+    _generateBlockInfo(block) {
         const paramInfo = {};
         for (const name in block.param) {
             if (block.param[name].type === 9) { // script
@@ -113,7 +113,8 @@ class ExtensionAPI {
             paramInfo[name] = {
                 type: argumentType[block.param[name].type],
                 defaultValue: block.param[name].default || '',
-                shadow: block.param[name].shadow
+                shadow: block.param[name].shadow,
+                isArgument: block.param[name].isArgument
             };
         }
         return {
@@ -129,7 +130,7 @@ class ExtensionAPI {
         };
     }
 
-    refreshBlocks () {
+    refreshBlocks() {
         return new Promise((resolve, reject) => {
             for (const i in this.categoryInfo) {
                 this.categoryInfo[i].name = formatMessage({
@@ -157,9 +158,9 @@ class ExtensionAPI {
                         // if the param doesn't have menu or it's an field
                         if (!block.param[paramId].menu || block.param[paramId].field) continue;
                         // if the param uses an existing menu
-                        if (typeof(block.param[paramId].menu) === 'string') continue;
+                        if (typeof (block.param[paramId].menu) === 'string') continue;
                         let menuItems;
-                        if (typeof(block.param[paramId].menu) === 'function') {
+                        if (typeof (block.param[paramId].menu) === 'function') {
                             menuItems = block.param[paramId].menu;
                         } else {
                             menuItems = block.param[paramId].menu.map(item => ([
@@ -196,12 +197,12 @@ class ExtensionAPI {
         });
     }
 
-    addBlock (block) {
+    addBlock(block) {
         const category = this._addBlock(block);
         this.vm.emit('BLOCKSINFO_UPDATE', category);
     }
 
-    addBlocks (blocks) {
+    addBlocks(blocks) {
         const updateList = new Map();
         for (const block of blocks) {
             const category = this._addBlock(block);
@@ -219,7 +220,7 @@ class ExtensionAPI {
      * @param {BlockPrototype} block the block prototype to add
      * @returns {CategoryInfo} category info
      */
-    _addBlock (block) {
+    _addBlock(block) {
         if (!block.option) block.option = {};
         const category = this._getCategory(block.categoryId);
         const blockJSON = {
@@ -228,7 +229,8 @@ class ExtensionAPI {
             category: category.name,
             colour: category.color1,
             colourSecondary: category.color2,
-            colourTertiary: category.color3
+            colourTertiary: category.color3,
+            onchange: block.onchange
         };
         const blockInfo = this._generateBlockInfo(block);
         if (block.option.filter) blockInfo.filter = block.option.filter; //filter过滤器
@@ -245,7 +247,7 @@ class ExtensionAPI {
             // if the param doesn't have menu or it's an field
             if (!block.param[paramId].menu || block.param[paramId].field) continue;
             // if the param uses an existing menu
-            if (typeof(block.param[paramId].menu) === 'string') continue;
+            if (typeof (block.param[paramId].menu) === 'string') continue;
             // check whether the menu specified an id
             if (!block.param[paramId].menuId) {
                 // automatically generate an id
@@ -254,7 +256,7 @@ class ExtensionAPI {
 
             //动态菜单 传function
             let menuItems;
-            if (typeof(block.param[paramId].menu) === 'function') {
+            if (typeof (block.param[paramId].menu) === 'function') {
                 menuItems = block.param[paramId].menu;
             } else {
                 menuItems = block.param[paramId].menu.map(item => ([
@@ -265,7 +267,7 @@ class ExtensionAPI {
                     item.value
                 ]));
             }
-            
+
             category.menus.push({
                 json: {
                     message0: '%1',
@@ -288,37 +290,37 @@ class ExtensionAPI {
         // TODO: Show icon before block
 
         switch (block.type) {
-        case 1: // COMMAND
-            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
-            blockJSON.previousStatement = null;
-            if (!block.option.terminal) {
+            case 1: // COMMAND
+                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
+                blockJSON.previousStatement = null;
+                if (!block.option.terminal) {
+                    blockJSON.nextStatement = null;
+                }
+                break;
+            case 2: // REPORTER
+                blockJSON.output = 'String';
+                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_ROUND;
+                break;
+            case 3: // BOOLEAN
+                blockJSON.output = 'Boolean';
+                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_HEXAGONAL;
+                break;
+            /* deleted
+            case 4: // BRANCH
+                // TODO: Block with branch
+                break;
+            */
+            case 5: // HAT
+                // blockInfo.isEdgeActivated = block.isEdgeActivated;
+                if (!blockInfo.isEdgeActivated) {
+                    blockInfo.isEdgeActivated = true;
+                }
+                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
                 blockJSON.nextStatement = null;
-            }
-            break;
-        case 2: // REPORTER
-            blockJSON.output = 'String';
-            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_ROUND;
-            break;
-        case 3: // BOOLEAN
-            blockJSON.output = 'Boolean';
-            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_HEXAGONAL;
-            break;
-        /* deleted
-        case 4: // BRANCH
-            // TODO: Block with branch
-            break;
-        */
-        case 5: // HAT
-            // blockInfo.isEdgeActivated = block.isEdgeActivated;
-            if (!blockInfo.isEdgeActivated) {
-                blockInfo.isEdgeActivated = true;
-            }
-            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
-            blockJSON.nextStatement = null;
-            break;
-        default:
-        // TODO: Error, unknown
-            break;
+                break;
+            default:
+                // TODO: Error, unknown
+                break;
         }
         // TODO: Alternate between a block "arm" with text on it and an open slot for a substack
         // engine/runtime.js: line 1145-1167
@@ -365,7 +367,7 @@ class ExtensionAPI {
         return category;
     }
 
-    _processBlockArguments (context, block) {
+    _processBlockArguments(context, block) {
         const text = context.blockInfo.text;
         let inBranchNum = 0;
         let outLineNum = 0;
@@ -403,7 +405,7 @@ class ExtensionAPI {
                 context.blockJSON[`args${outLineNum}`] = [];
                 continue;
             }
-            
+
             // create param lazily in order to avoid errors caused by BRANCH
             const param = block.param[placeholder] || {};
 
@@ -442,55 +444,64 @@ class ExtensionAPI {
                     argJSON.check = argTypeInfo.check;
                 }
 
-                let valueName, shadowType, fieldName;
-                if (param.menu && param.field) {
-                    argJSON.type = 'field_dropdown';
-                    argJSON.options = param.menu.map(item => ([
-                        formatMessage({
-                            id: item.messageId,
-                            default: item.messageId
-                        }),
-                        item.value
-                    ]));
-                    valueName = null;
-                    shadowType = null;
-                    fieldName = placeholder;
-                } else if (param.menuId) {
-                    valueName = placeholder;
-                    shadowType = param.menuId;
-                    fieldName = placeholder;
-                } else {
-                    valueName = placeholder;
-                    shadowType = argInfo.shadow;
-                    if (argInfo.shadow === undefined || argInfo.shadow === true) {
-                        shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
-                        fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
-                    }
-                }
-
-                // <value> is the ScratchBlocks name for a block input.
-                if (valueName) {
+                //定义参数块
+                if (argInfo.isArgument) {
                     context.inputList.push(`<value name="${placeholder}">`);
-                }
-
-                // The <shadow> is a placeholder for a reporter and is visible when there's no reporter in this input.
-                // Boolean inputs don't need to specify a shadow in the XML.
-                if (shadowType) {
-                    context.inputList.push(`<shadow type="${shadowType}">`);
-                }
-
-                // A <field> displays a dynamic value: a user-editable text field, a drop-down menu, etc.
-                // Leave out the field if defaultValue or fieldName are not specified
-                if (defaultValue && fieldName) {
-                    context.inputList.push(`<field name="${fieldName}">${defaultValue}</field>`);
-                }
-
-                if (shadowType) {
+                    context.inputList.push(`<shadow type="argument_reporter_string_number">`);
+                    context.inputList.push(`<field name="VALUE">${defaultValue}</field>`);
                     context.inputList.push('</shadow>');
-                }
-
-                if (valueName) {
                     context.inputList.push('</value>');
+                } else {
+                    let valueName, shadowType, fieldName;
+                    if (param.menu && param.field) {
+                        argJSON.type = 'field_dropdown';
+                        argJSON.options = param.menu.map(item => ([
+                            formatMessage({
+                                id: item.messageId,
+                                default: item.messageId
+                            }),
+                            item.value
+                        ]));
+                        valueName = null;
+                        shadowType = null;
+                        fieldName = placeholder;
+                    } else if (param.menuId) {
+                        valueName = placeholder;
+                        shadowType = param.menuId;
+                        fieldName = placeholder;
+                    } else {
+                        valueName = placeholder;
+                        shadowType = argInfo.shadow;
+                        if (argInfo.shadow === undefined || argInfo.shadow === true) {
+                            shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
+                            fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
+                        }
+                    }
+
+                    // <value> is the ScratchBlocks name for a block input.
+                    if (valueName) {
+                        context.inputList.push(`<value name="${placeholder}">`);
+                    }
+
+                    // The <shadow> is a placeholder for a reporter and is visible when there's no reporter in this input.
+                    // Boolean inputs don't need to specify a shadow in the XML.
+                    if (shadowType) {
+                        context.inputList.push(`<shadow type="${shadowType}">`);
+                    }
+
+                    // A <field> displays a dynamic value: a user-editable text field, a drop-down menu, etc.
+                    // Leave out the field if defaultValue or fieldName are not specified
+                    if (defaultValue && fieldName) {
+                        context.inputList.push(`<field name="${fieldName}">${defaultValue}</field>`);
+                    }
+
+                    if (shadowType) {
+                        context.inputList.push('</shadow>');
+                    }
+
+                    if (valueName) {
+                        context.inputList.push('</value>');
+                    }
                 }
             }
 
@@ -511,14 +522,14 @@ class ExtensionAPI {
         }
     }
 
-    removeBlocks (blockIds) {
+    removeBlocks(blockIds) {
         for (const blockId of blockIds) {
             this._removeBlock(blockId);
         }
         this.refreshBlocks();
     }
 
-    removeBlock (blockId) {
+    removeBlock(blockId) {
         this._removeBlock(blockId);
         this.refreshBlocks();
     }
@@ -527,10 +538,10 @@ class ExtensionAPI {
      * Helper for removing a block from its id.
      * @param {string} blockId block id
      */
-    _removeBlock (blockId) {
+    _removeBlock(blockId) {
         for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
-            for (const j in category.blocks){
+            for (const j in category.blocks) {
                 if (category.blocks[j].info.opcode === blockId) {
                     this.vm.runtime._blockInfo[i].blocks.splice(j, 1);
                     this.vm.emit('BLOCK_REMOVED', blockId);
@@ -539,13 +550,13 @@ class ExtensionAPI {
         }
     }
 
-    addCategory (category) {
+    addCategory(category) {
         // 阻止多次添加同名 category
         if (!!this._getCategory(category.categoryId)) {
             console.warn('reject to add category twice');
             return;
         }
-        
+
         const categoryInfo = {
             id: category.categoryId,
             messageId: category.messageId,
@@ -567,13 +578,13 @@ class ExtensionAPI {
         this.vm.emit('EXTENSION_ADDED', categoryInfo);
     }
 
-    removeCategory (categoryId) {
+    removeCategory(categoryId) {
         // 阻止卸载不存在 category
         if (!this._getCategory(categoryId)) {
             console.warn('reject to add category twice');
             return;
         }
-        
+
         for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
             if (category.id === categoryId) {
@@ -584,11 +595,11 @@ class ExtensionAPI {
         this.refreshBlocks();
     }
 
-    getPlaygroundData () {
+    getPlaygroundData() {
         return this.vm.getPlaygroundData();
     }
 
-    loadProject (input) {
+    loadProject(input) {
         return this.vm.loadProject(input);
     }
 
@@ -599,7 +610,7 @@ class ExtensionAPI {
      * @return {object} JSON blob for a scratch-blocks image field.
      * @private
      */
-    _constructInlineImageJson (argInfo) {
+    _constructInlineImageJson(argInfo) {
         if (!argInfo.dataURI) {
             log.warn('Missing data URI in extension block with argument type IMAGE');
         }

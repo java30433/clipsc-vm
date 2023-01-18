@@ -21,64 +21,73 @@ const compileTarget = function (target) {
     //一次性调用返回值存储的变量列表
     const varList = [];
 
+    const checkInputs = function (inputBlockID, lineBlockID, addVar = false) {
+        if (!blocks[inputBlockID]) return;
+        var inputIndex = 0;
+        var returnCallIndex = 0;
+        for (const inputss of Object.values(blocks[inputBlockID].inputs)) {
+            for (const inputID of inputss) {
+                if (inputID.constructor == String) {
+                    if (blocks[inputID] && blocks[inputID].opcode == "procedures_call_return") {
+                        const lineBlock = blocks[lineBlockID];
+                        var varCur;
+                        if (addVar) {
+                            varList.push(genVariable());
+                            varCur = varList[varList.length - 1];
+                        } else {
+                            if (varList.length == returnCallIndex) {
+                                varList.push(genVariable());
+                            }
+                            varCur = varList[returnCallIndex];
+                        }
+                        const returnCallBlock = blocks[inputID];
+    
+                        const commandBlockID = uid();
+                        blocks[commandBlockID] = returnCallBlock;
+                        const commandBlock = blocks[commandBlockID];
+                        commandBlock.opcode = "procedures_call";
+                        commandBlock.mutation.return = "false"; //这个bool居然是用String存的
+    
+                        blocks[lineBlock.parent].next = commandBlockID;
+                        commandBlock.parent = lineBlock.parent;
+    
+                        const varSetBlockID = uid();
+                        const varSetBlock = {};
+                        varSetBlock.opcode = "data_setvariableto";
+                        varSetBlock.parent = commandBlockID;
+                        commandBlock.next = varSetBlockID;
+                        varSetBlock.next = lineBlockID;
+                        lineBlock.parent = varSetBlockID;
+                        varSetBlock.inputs = {};
+                        varSetBlock.inputs["VALUE"] = [1, [12, varR, varR]];
+                        varSetBlock.fields = {};
+                        varSetBlock.fields["VARIABLE"] = [varCur, varCur];
+                        varSetBlock.shadow = false;
+                        varSetBlock.topLevel = false;
+                        blocks[varSetBlockID] = varSetBlock;
+    
+                        const inputBlock = blocks[inputBlockID];
+                        inputBlock.inputs[Object.keys(inputBlock.inputs)[inputIndex]] = [1, [12, varCur, varCur]];
+    
+                        delete blocks[inputID];
+    
+                        checkAndReplaceReturnCall(commandBlockID, true);
+    
+                        returnCallIndex++;
+                    } else {
+                        checkInputs(inputID, lineBlockID, addVar);
+                    }
+                }
+            }
+            inputIndex++;
+        }
+    }
     /**
      * 检测积木中的返回值调用并编译
      * @param {String} lineBlockID 要检测的积木ID，必须是一行的，不是reporter
      */
     const checkAndReplaceReturnCall = function (lineBlockID, addVar = false) {
-        const lineBlock = blocks[lineBlockID];
-        var inputIndex = 0;
-        var returnCallIndex = 0;
-        for (const inputss of Object.values(lineBlock.inputs)) {
-            for (const inputID of inputss) {
-                if (inputID.constructor == String && blocks[inputID].opcode == "procedures_call_return") {
-                    var varCur;
-                    if (addVar) {
-                        varList.push(genVariable());
-                        varCur = varList[varList.length - 1];
-                    } else {
-                        if (varList.length == returnCallIndex) {
-                            varList.push(genVariable());
-                        }
-                        varCur = varList[returnCallIndex];
-                    }
-                    const returnCallBlock = blocks[inputID];
-
-                    const commandBlockID = uid();
-                    blocks[commandBlockID] = returnCallBlock;
-                    const commandBlock = blocks[commandBlockID];
-                    commandBlock.opcode = "procedures_call";
-                    commandBlock.mutation.return = "false"; //这个bool居然是用String存的
-
-                    blocks[lineBlock.parent].next = commandBlockID;
-                    commandBlock.parent = lineBlock.parent;
-
-                    const varSetBlockID = uid();
-                    const varSetBlock = {};
-                    varSetBlock.opcode = "data_setvariableto";
-                    varSetBlock.parent = commandBlockID;
-                    commandBlock.next = varSetBlockID;
-                    varSetBlock.next = lineBlockID;
-                    lineBlock.parent = varSetBlockID;
-                    varSetBlock.inputs = {};
-                    varSetBlock.inputs["VALUE"] = [1, [12, varR, varR]];
-                    varSetBlock.fields = {};
-                    varSetBlock.fields["VARIABLE"] = [varCur, varCur];
-                    varSetBlock.shadow = false;
-                    varSetBlock.topLevel = false;
-                    blocks[varSetBlockID] = varSetBlock;
-
-                    lineBlock.inputs[Object.keys(lineBlock.inputs)[inputIndex]] = [1, [12, varCur, varCur]];
-
-                    delete blocks[inputID];
-
-                    checkAndReplaceReturnCall(commandBlockID, true);
-
-                    returnCallIndex++;
-                }
-            }
-            inputIndex++;
-        }
+        checkInputs(lineBlockID, lineBlockID, addVar);
     }
 
     /**
@@ -89,11 +98,13 @@ const compileTarget = function (target) {
         var topBlock = blocks[topBlockID];
         while (topBlock != null) {
             switch (topBlock.opcode) {
+                /*
                 //返回%s 积木替换为设置变量R
                 case 'procedures_return':
                     topBlock.opcode = "data_setvariableto";
                     topBlock.fields["VARIABLE"] = [varR, varR];
                     break;
+                */
                 //返回值定义框 替换为普通的
                 case 'procedures_definition_return':
                     topBlock.opcode = "procedures_definition";

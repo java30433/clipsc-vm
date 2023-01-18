@@ -426,7 +426,7 @@ class Thread {
      * by examining the stack.
      * @param {!string} procedureCode Procedure code of procedure being called.
      * @return {boolean} True if the call appears recursive.
-     */
+     */ 
     isRecursiveCall (procedureCode) {
         let callCount = 5; // Max number of enclosing procedure calls to examine.
         const sp = this.stack.length - 1;
